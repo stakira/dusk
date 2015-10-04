@@ -1,0 +1,30 @@
+
+/.project
+/Makefile
+/benchmarks
+/third_party
+/build
+/ipch
+/out
+/xcodebuild
+/.flaky.log
+/.debug.log
+/*.Makefile
+/*.target.mk
+*.host.mk
+
+# python
+
+*.pyc
+
+
+# msvs
+
+*.sln
+*.suo
+*.vcproj
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.opensdf
+*.sdf

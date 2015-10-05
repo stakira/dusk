@@ -1,7 +1,7 @@
 
 import os
 import sys
-from os.path import join, splitext, basename
+from os.path import join, splitext, dirname, basename
 import time
 from optparse import OptionParser
 import re
@@ -55,6 +55,7 @@ def makeFile(root_dir, client_dir, input_files,
              compress, no_compress_extensions):
   module = basename(input_files[0]).split('.')[0]
   output_file = module + '_source.h'
+  output_file = join(dirname(input_files[0]), output_file)
   define_guard = "DUSK_%s_SOURCE_H" % (module.upper())
   cc_text = '\n'
   cc_text += '#ifndef %s\n' % (define_guard)

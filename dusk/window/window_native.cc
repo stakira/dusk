@@ -1,15 +1,16 @@
 
 // dusk
 #include "window_native.h"
+#include "window_source.h"
 #include "dusk/vm/nativeutils.h"
+#include "dusk/vm/libregistry.h"
 
 // std
 #include <string>
 #include <sstream>
 
 // dart
-#include "vm/dart_entry.h"
-#include "vm/dart_api_impl.h"
+#include "dart_api.h"
 
 // love
 #include "common/Module.h"
@@ -17,6 +18,10 @@
 
 namespace dusk {
 namespace window {
+
+NativeEntry WindowNativeEntries[] = {
+  WINDOW_NATIVE_LIST(NATIVE_ENTRY)
+};
 
 #define instance() (love::Module::getInstance<love::window::sdl::Window>(love::Module::M_WINDOW))
 
@@ -252,5 +257,10 @@ NATIVE_DEF(Window_ToPixels, 2) {
   Dart_SetReturnValue(args, ret);
 }
 
+void Register() {
+  vm::LibraryRegistry::RegisterLibrary("window", source);
+  REG_ENTRIES(WindowNativeEntries)
 }
-}
+
+}  // namespace window
+}  // namespace dusk

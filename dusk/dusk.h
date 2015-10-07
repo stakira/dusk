@@ -3,7 +3,6 @@
 #define DUSK_H
 
 #include "dusk/vm/host.h"
-#include "window/window.h"
 
 namespace dusk {
 

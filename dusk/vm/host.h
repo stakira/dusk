@@ -2,8 +2,11 @@
 #ifndef DUSK_VM_HOST_H
 #define DUSK_VM_HOST_H
 
-#include "include/dart_api.h"
+// std
 #include <string>
+
+// dart
+#include "include/dart_api.h"
 
 namespace dusk {
 namespace vm {

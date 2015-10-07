@@ -1,8 +1,14 @@
 
+// dusk
 #include "graphics_native.h"
-
+#include "graphics_source.h"
 #include "dusk/vm/nativeutils.h"
+#include "dusk/vm/libregistry.h"
 
+// dart
+#include "dart_api.h"
+
+// love
 #include "common/Module.h"
 #include "modules/graphics/Graphics.h"
 #include "modules/graphics/opengl/Graphics.h"
@@ -10,6 +16,10 @@
 
 namespace dusk {
 namespace graphics {
+
+NativeEntry GraphicsNativeEntries[] = {
+  GRAPHICS_NATIVE_LIST(NATIVE_ENTRY)
+};
 
 #define instance() (love::Module::getInstance<love::graphics::opengl::Graphics>(love::Module::M_GRAPHICS))
 
@@ -214,6 +224,11 @@ NATIVE_DEF(Graphics_Translate, 2) {
   float x = vm::ConvertArg<float>(args, 0);
   float y = vm::ConvertArg<float>(args, 1);
   instance()->translate(x, y);
+}
+
+void Register() {
+  vm::LibraryRegistry::RegisterLibrary("graphics", source);
+  REG_ENTRIES(GraphicsNativeEntries)
 }
 
 }  // namespace graphics

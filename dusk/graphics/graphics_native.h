@@ -2,7 +2,6 @@
 #ifndef DUSK_GRAPHICS_NATIVE_H
 #define DUSK_GRAPHICS_NATIVE_H
 
-#include "dart_api.h"
 #include "dusk/vm/native.h"
 
 namespace dusk {
@@ -34,17 +33,7 @@ namespace graphics {
 
 GRAPHICS_NATIVE_LIST(NATIVE_DECL)
 
-static struct NativeEntry {
-  const char* name_;
-  Dart_NativeFunction function_;
-  int argument_count_;
-} GraphicsNativeEntries[] = {
-  GRAPHICS_NATIVE_LIST(NATIVE_ENTRY)
-};
-
-NATIVE_LOOKUP(GraphicsNativeEntries)
-
-NATIVE_SYMBOL(GraphicsNativeEntries)
+void Register();
 
 }  // namespace graphics
 }  // namespace dusk

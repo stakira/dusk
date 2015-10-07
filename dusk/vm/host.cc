@@ -1,10 +1,13 @@
 
+// dusk
+#include "dusk/vm/host.h"
+#include "dusk/vm/libregistry.h"
+
+// std
 #include <stdio.h>
 #include <string.h>
 
-#include "host.h"
-#include "libhandler.h"
-
+// dart
 #include "bin/dartutils.h"
 #include "bin/thread.h"
 #include "bin/builtin.h"
@@ -286,7 +289,8 @@ Dart_Isolate Host::CreateIsolateAndSetupHelper(const char* script_uri,
   }
 
   // set up the library tag handler for this isolate.
-  Dart_Handle result = Dart_SetLibraryTagHandler(dusk::vm::LibraryTagHandler);
+  Dart_Handle result = Dart_SetLibraryTagHandler(
+    dusk::vm::LibraryRegistry::LibraryTagHandler);
 
   if (Dart_IsError(result)) {
     *error = strdup(Dart_GetError(result));
@@ -361,9 +365,10 @@ Dart_Isolate Host::CreateIsolateAndSetupHelper(const char* script_uri,
 
   dart::bin::DartUtils::SetupIOLibrary(script_uri);
 
-  // make the isolate runnable so that it is ready to handle messages.
   Dart_ExitScope();
   Dart_ExitIsolate();
+
+  // make the isolate runnable so that it is ready to handle messages.
   bool ret = Dart_IsolateMakeRunnable(isolate);
   if (!ret) {
     *error = strdup("Invalid isolate state - Unable to make it runnable");

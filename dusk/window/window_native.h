@@ -2,7 +2,6 @@
 #ifndef DUSK_WINDOW_NATIVE_H
 #define DUSK_WINDOW_NATIVE_H
 
-#include "dart_api.h"
 #include "dusk/vm/native.h"
 
 namespace dusk {
@@ -36,19 +35,9 @@ namespace window {
 
 WINDOW_NATIVE_LIST(NATIVE_DECL)
 
-static struct NativeEntry {
-  const char* name_;
-  Dart_NativeFunction function_;
-  int argument_count_;
-} WindowNativeEntries[] = {
-  WINDOW_NATIVE_LIST(NATIVE_ENTRY)
-};
+void Register();
 
-NATIVE_LOOKUP(WindowNativeEntries)
-
-NATIVE_SYMBOL(WindowNativeEntries)
-
-}
-}
+}  // namespace window
+}  // namespace dusk
 
 #endif // !DUSK_WINDOW_NATIVE_H

@@ -2,16 +2,18 @@
 #ifndef DUSK_VM_NATIVEUTILS_H
 #define DUSK_VM_NATIVEUTILS_H
 
-#include "dart_api.h"
-
+// std
 #include <string>
 #include <vector>
 #include <sstream>
 
+// dart
+#include "dart_api.h"
+
 namespace dusk {
 namespace vm {
 
-Dart_Handle PopError(const char* error);
+Dart_Handle PopError(const char* msg, ...);
 
 // Convert Dart handle to native type
 template<typename T>
@@ -148,6 +150,10 @@ inline std::vector<T> ConvertArgList(
   return vec;
 }
 
+// disable warning caused by uninitialized peer pointer
+#pragma warning(push)
+#pragma warning(disable:4700)
+
 inline std::string ConvertArgString(
   Dart_NativeArguments args, int index) {
   void** peer;
@@ -166,6 +172,8 @@ inline std::string ConvertArgString(
   ss << cstr;
   return ss.str();
 }
+
+#pragma warning(pop)
 
 }  // namespace vm
 }  // namespace dusk

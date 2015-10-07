@@ -1,9 +1,15 @@
 
+// dusk
 #include "dusk.h"
+#include "dusk/utils/clock.h"
+#include "dusk/window/window_native.h"
+#include "dusk/graphics/graphics_native.h"
 
+// std
 #include <stdlib.h>
 #include <stdio.h>
 
+// love
 #include "common/Module.h"
 #include "modules/window/sdl/Window.h"
 #include "modules/event/Event.h"
@@ -17,14 +23,15 @@
 #include "modules/font/Font.h"
 #include "modules/font/freetype/Font.h"
 
-#include "utils/clock.h"
-
 namespace dusk {
 
 DuskDelegate::DuskDelegate() {}
 
 void DuskDelegate::Initialize() {
   vmhost_ = new dusk::vm::Host();
+
+  dusk::window::Register();
+  dusk::graphics::Register();
   
   if (!vmhost_->Initialize()) {
     printf("Cannot initialize VM");
@@ -45,7 +52,6 @@ void DuskDelegate::Initialize() {
   settings->minheight = 600;
   settings->msaa = 4;
 
-  window->setWindowTitle("love-as-lib test");
   window->setWindow(
     800,
     600,

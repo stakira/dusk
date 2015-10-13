@@ -23,6 +23,11 @@ NativeEntry WindowNativeEntries[] = {
   WINDOW_NATIVE_LIST(NATIVE_ENTRY)
 };
 
+void Register() {
+  vm::LibraryRegistry::RegisterLibrary("window", source);
+  REG_ENTRIES(WindowNativeEntries)
+}
+
 #define instance() (love::Module::getInstance<love::window::sdl::Window>(love::Module::M_WINDOW))
 
 NATIVE_DEF(Window_FromPixels, 2) {
@@ -108,7 +113,7 @@ NATIVE_DEF(Window_GetMode, 0) {
   love::window::WindowSettings settings;
   instance()->getWindow(w, h, settings);
   
-  // it's very difficult to manipulate map using dart embedding
+  // there is no way to manipulate map using dart embedding
   // api, so the workaround is to use json.
   
   const char *fstypestr = "desktop";
@@ -133,12 +138,6 @@ NATIVE_DEF(Window_GetMode, 0) {
   ss << " \"y\" : " << settings.y << " } }";
 
   Dart_SetReturnValue(args, Dart_NewStringFromCString(ss.str().c_str()));
-}
-
-NATIVE_DEF(Window_SetMinSize, 2) {
-  int w = vm::ConvertArg<int>(args, 0);
-  int h = vm::ConvertArg<int>(args, 1);
-  // todo
 }
 
 NATIVE_DEF(Window_GetPixelScale, 0) {
@@ -222,10 +221,49 @@ NATIVE_DEF(Window_SetIcon, 0) {
 }
 
 NATIVE_DEF(Window_SetMode, 3) {
+  using ::love::window::Window;
+  using ::love::window::WindowSettings;
+  
   int w = vm::ConvertArg<int>(args, 0);
   int h = vm::ConvertArg<int>(args, 1);
-  bool success = instance()->setWindow(w, h, nullptr);
-  // todo : set flags
+  bool success = false;
+  Dart_Handle flags = Dart_GetNativeArgument(args, 2);
+  if (Dart_IsNull(flags)) {
+    success = instance()->setWindow(w, h, nullptr);
+  }
+  else if (Dart_IsMap(flags)) {
+    WindowSettings settings;
+    settings.fullscreen =
+      vm::MapConvertAt<bool>(flags, "fullscreen", settings.fullscreen);
+    settings.fstype = static_cast<Window::FullscreenType>(
+      vm::MapConvertAt<int>(flags, "fstype",
+        static_cast<int>(settings.fstype)));
+    settings.vsync =
+      vm::MapConvertAt<bool>(flags, "vsync", settings.vsync);
+    settings.msaa =
+      vm::MapConvertAt<int>(flags, "fsaa", settings.msaa);
+    settings.resizable =
+      vm::MapConvertAt<bool>(flags, "resizable", settings.resizable);
+    settings.borderless =
+      vm::MapConvertAt<bool>(flags, "borderless", settings.borderless);
+    settings.centered =
+      vm::MapConvertAt<bool>(flags, "centered", settings.centered);
+    settings.display =
+      vm::MapConvertAt<bool>(flags, "display", settings.display);
+    settings.minwidth =
+      vm::MapConvertAt<int>(flags, "minwidth", settings.minwidth);
+    settings.minheight =
+      vm::MapConvertAt<int>(flags, "minheight", settings.minheight);
+    settings.highdpi =
+      vm::MapConvertAt<bool>(flags, "highdpi", settings.highdpi);
+    settings.x =
+      vm::MapConvertAt<int>(flags, "x", settings.x);
+    settings.y =
+      vm::MapConvertAt<int>(flags, "y", settings.y);
+    settings.useposition =
+      vm::MapContainsKey(flags, "x") && vm::MapContainsKey(flags, "y");
+    success = instance()->setWindow(w, h, &settings);
+  }
   Dart_SetReturnValue(args, Dart_NewBoolean(success));
 }
 
@@ -255,11 +293,6 @@ NATIVE_DEF(Window_ToPixels, 2) {
   Dart_ListSetAt(ret, 0, Dart_NewDouble(px));
   Dart_ListSetAt(ret, 1, Dart_NewDouble(py));
   Dart_SetReturnValue(args, ret);
-}
-
-void Register() {
-  vm::LibraryRegistry::RegisterLibrary("window", source);
-  REG_ENTRIES(WindowNativeEntries)
 }
 
 }  // namespace window

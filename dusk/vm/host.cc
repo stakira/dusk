@@ -229,6 +229,7 @@ void Host::Stop()
 }
 
 void Host::VmInvoke(const char* function, int argc, Dart_Handle* argv) {
+  Dart_EnterScope();
   Dart_Handle library = Dart_RootLibrary();
   Dart_Handle name = Dart_NewStringFromCString(function);
   Dart_Handle result = Dart_Invoke(library, name, argc, argv);
@@ -249,6 +250,8 @@ void Host::VmInvoke(const char* function, int argc, Dart_Handle* argv) {
       printf("Dart Fatal Error: %s\n", Dart_GetError(result));
     }
   }
+
+  Dart_ExitScope();
 }
 
 void Host::ShutdownIsolate(void* callback_data) {

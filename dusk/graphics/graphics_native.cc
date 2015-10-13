@@ -11,7 +11,19 @@
 // love
 #include "common/Module.h"
 #include "modules/graphics/Graphics.h"
+
+// fix gladfuncs.hpp
+#ifdef near
+#undef near
+#endif
+
+#ifdef far
+#undef far
+#endif
+
 #include "modules/graphics/opengl/Graphics.h"
+#include "modules/filesystem/Filesystem.h"
+#include "modules/filesystem/physfs/File.h"
 #include "modules/font/freetype/Font.h"
 
 namespace dusk {
@@ -20,6 +32,11 @@ namespace graphics {
 NativeEntry GraphicsNativeEntries[] = {
   GRAPHICS_NATIVE_LIST(NATIVE_ENTRY)
 };
+
+void Register() {
+  vm::LibraryRegistry::RegisterLibrary("graphics", source);
+  REG_ENTRIES(GraphicsNativeEntries)
+}
 
 #define instance() (love::Module::getInstance<love::graphics::opengl::Graphics>(love::Module::M_GRAPHICS))
 
@@ -32,6 +49,7 @@ inline love::graphics::Graphics::DrawMode GetMode(bool filled) {
 /**
  * Drawing
  */
+
 NATIVE_DEF(Graphics_Arc, 7) {
   bool filled = vm::ConvertArg<bool>(args, 0);
   double x = vm::ConvertArg<double>(args, 1);
@@ -147,13 +165,13 @@ NATIVE_DEF(Graphics_Print, 10) {
 }
 
 NATIVE_DEF(Graphics_Printf, 12) {
+  using ::love::graphics::opengl::Font;
+
   std::string text = vm::ConvertArgString(args, 0);
   float x = vm::ConvertArg<float>(args, 1);
   float y = vm::ConvertArg<float>(args, 2);
-  float wrap = vm::ConvertArg<float>(args, 3);
-
-  //Font::AlignMode align = Font::ALIGN_LEFT;
-
+  float limit = vm::ConvertArg<float>(args, 3);
+  int alignment = vm::ConvertArg<int>(args, 4);
   float angle = vm::ConvertArg<float>(args, 5);
   float sx = vm::ConvertArg<float>(args, 6);
   float sy = vm::ConvertArg<float>(args, 7);
@@ -162,8 +180,8 @@ NATIVE_DEF(Graphics_Printf, 12) {
   float kx = vm::ConvertArg<float>(args, 10);
   float ky = vm::ConvertArg<float>(args, 11);
 
-  //todo
-  //instance()->printf(text, x, y, wrap, align, angle, sx, sy, ox, oy, kx, ky);
+  Font::AlignMode align = static_cast<Font::AlignMode>(alignment);
+  instance()->printf(text, x, y, limit, align, angle, sx, sy, ox, oy, kx, ky);
 }
 
 NATIVE_DEF(Graphics_Rectangle, 8) {
@@ -189,6 +207,7 @@ NATIVE_DEF(Graphics_Rectangle, 8) {
 /**
  * Coordinate system
  */
+
 NATIVE_DEF(Graphics_Origin, 0) {
   instance()->origin();
 }
@@ -226,9 +245,31 @@ NATIVE_DEF(Graphics_Translate, 2) {
   instance()->translate(x, y);
 }
 
-void Register() {
-  vm::LibraryRegistry::RegisterLibrary("graphics", source);
-  REG_ENTRIES(GraphicsNativeEntries)
+/**
+ * Object creation
+ */
+
+NATIVE_DEF(Graphics_NewCanvas, 4) {
+  using ::love::graphics::opengl::Canvas;
+  
+  int w = vm::ConvertArg<int>(args, 0);
+  int h = vm::ConvertArg<int>(args, 1);
+  int fmt = vm::ConvertArg<int>(args, 2);
+  int msaa = vm::ConvertArg<int>(args, 3);
+
+  Canvas::Format format = static_cast<Canvas::Format>(fmt);
+  Canvas* canvas = instance()->newCanvas(w, h, format, msaa);
+
+  love::Proxy *u = new love::Proxy();
+  u->object = canvas;
+  u->type = love::Type::GRAPHICS_CANVAS_ID;
+
+  canvas->release();
+
+  Dart_SetReturnValue(args,
+    Dart_NewInteger(reinterpret_cast<intptr_t>(u)));
+  
+  // todo : RegisterGC
 }
 
 }  // namespace graphics

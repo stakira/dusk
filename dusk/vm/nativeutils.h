@@ -9,6 +9,11 @@
 
 // dart
 #include "dart_api.h"
+#include "bin/dartutils.h"
+
+// love
+#include "common/Object.h"
+#include "common/runtime.h"
 
 namespace dusk {
 namespace vm {
@@ -153,7 +158,6 @@ inline std::vector<T> ConvertArgList(
 // disable warning caused by uninitialized peer pointer
 #pragma warning(push)
 #pragma warning(disable:4700)
-
 inline std::string ConvertArgString(
   Dart_NativeArguments args, int index) {
   void** peer;
@@ -172,8 +176,55 @@ inline std::string ConvertArgString(
   ss << cstr;
   return ss.str();
 }
-
 #pragma warning(pop)
+
+Dart_WeakPersistentHandle RegisterGC(
+  Dart_Handle dartObject,
+  love::Proxy* proxy,
+  intptr_t size);
+
+bool ArgIsLoveType(Dart_NativeArguments args, int index, love::Type type);
+
+template<typename T>
+T* ConvertArgLoveType(Dart_NativeArguments args, int index, love::Type type) {
+  // get pointer
+  Dart_Handle handle = Dart_GetNativeArgument(args, index);
+  intptr_t ptr = dart::bin::DartUtils::GetIntptrValue(handle);
+  // convert type
+  love::Proxy *u = reinterpret_cast<love::Proxy*>(ptr);
+  if (!love::typeFlags[u->type][type]) {
+    const char* name = "Invalid";
+    love::getType(type, name);
+    vm::PopError("Could not convert to type %s.", name);
+  }
+  return reinterpret_cast<T*>(u->object);
+}
+
+template<typename T>
+inline T MapConvertAt(
+  Dart_Handle map, const char* key, T fallback) {
+  Dart_Handle key_ = Dart_NewStringFromCString(key);
+  // check key
+  Dart_Handle ret = Dart_MapContainsKey(map, key_);
+  if (Dart_IsError(ret)) {
+    Dart_PropagateError(ret);
+  }
+  if (!Convert<bool>(ret)) {
+    return fallback;
+  }
+  // retrive value
+  ret = Dart_MapGetAt(map, key_);
+  if (Dart_IsError(ret)) {
+    Dart_PropagateError(ret);
+  }
+  return Convert<T>(ret);
+}
+
+inline bool MapContainsKey(Dart_Handle map, const char* key) {
+  return Convert<bool>(
+    Dart_MapContainsKey(map, Dart_NewStringFromCString(key)));
+}
+
 
 }  // namespace vm
 }  // namespace dusk

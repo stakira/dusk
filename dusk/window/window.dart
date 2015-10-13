@@ -88,8 +88,22 @@ bool setFullscreen(bool fullscreen, [bool exclusive = true])
 void setIcon() // todo
     native 'DuskNative_Window_SetIcon';
 
-bool setMode(int w, int h, [Map flags])
+bool _setMode(int w, int h, Map flags)
     native 'DuskNative_Window_SetMode';
+
+bool setMode(int w, int h, [Map flags]) {
+    if (flags != null) {
+        switch (flags['fullscreentype']) {
+          case 'exclusive':
+            flags['fstype'] = 0; break;
+          case 'desktop':
+            flags['fstype'] = 1; break;
+          default:
+            break;
+        }
+    }
+    return _setMode(w, h, flags);
+}
 
 void _setPosition(int x, int y, int display)
     native 'DuskNative_Window_SetPosition';

@@ -30,6 +30,11 @@ namespace graphics {
   V(Graphics_Scale, 2)            \
   V(Graphics_Shear, 2)            \
   V(Graphics_Translate, 2)        \
+  /* Object creation */           \
+  V(Graphics_NewFont, 3)          \
+  V(Graphics_NewCanvas, 4)        \
+  V(Graphics_SetFont, 1)          \
+  V(Graphics_GetFont, 0)          \
 
 GRAPHICS_NATIVE_LIST(NATIVE_DECL)
 

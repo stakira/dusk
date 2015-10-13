@@ -28,3 +28,5 @@
 *.vcxproj.user
 *.opensdf
 *.sdf
+
+*_source.h

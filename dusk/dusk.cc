@@ -22,6 +22,7 @@
 #include "modules/mouse/sdl/Mouse.h"
 #include "modules/font/Font.h"
 #include "modules/font/freetype/Font.h"
+#include "modules/filesystem/physfs/Filesystem.h"
 
 namespace dusk {
 
@@ -69,6 +70,13 @@ void DuskDelegate::Initialize() {
 
   // font
   love::Module::registerInstance(new love::font::freetype::Font());
+
+  //filesystem
+  auto fsys = new love::filesystem::physfs::Filesystem();
+  love::Module::registerInstance(fsys);
+  fsys->init(0); // todo, use arg0
+  fsys->setFused(false);
+  fsys->setSource(".");
 }
 
 void DuskDelegate::Run() {

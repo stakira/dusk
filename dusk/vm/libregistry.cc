@@ -50,24 +50,28 @@ Dart_Handle LibraryRegistry::LibraryTagHandler(
   
   if (is_dusk) {
     // handle dusk scheme
+
     // find dusk library
+    Dart_Handle loadedLib = Dart_LookupLibrary(url);
+    if (Dart_IsError(loadedLib) || Dart_IsNull(loadedLib)) {
+      // load library if not yet loaded
+      const char* source = GetLibrarySource(url_string);
+      if (source == nullptr) {
+        return Dart_NewApiError("Unknown dusk scheme library.");
+      }
 
-    const char* source = GetLibrarySource(url_string);
-    if (source == nullptr) {
-      return Dart_NewApiError("Unknown dusk scheme library.");
-    }
-
-    // load source
-    Dart_Handle result = Dart_LoadLibrary(url,
-      Dart_NewStringFromCString(source), 0, 0);
-    if (Dart_IsError(result)) {
-      printf("Cannot load source for %s: '%s'\n",
-        url_string, Dart_GetError(result));
-      return result;
+      // load source
+      loadedLib = Dart_LoadLibrary(url,
+        Dart_NewStringFromCString(source), 0, 0);
+      if (Dart_IsError(loadedLib)) {
+        printf("Cannot load source for %s: '%s'\n",
+          url_string, Dart_GetError(loadedLib));
+        return loadedLib;
+      }
     }
 
     // set native resolver
-    Dart_SetNativeResolver(result,
+    Dart_SetNativeResolver(loadedLib,
       NativeEntryResolver, NativeEntrySymbol);
 
     return url;
@@ -104,7 +108,6 @@ bool LibraryRegistry::RegisterNativeFunction(
     return false;
   }
   else {
-    printf("Register %s %d\n", key.first, key.second);
     funcs_[key] = fn;
     return true;
   }
@@ -129,7 +132,6 @@ const uint8_t* LibraryRegistry::NativeEntrySymbol(
 Dart_NativeFunction LibraryRegistry::NativeFunctionLookup(
   std::string name,
   int numArgs) {
-  printf("Lookup %s %d\n", name.c_str(), numArgs);
   auto key = std::make_pair(name, numArgs);
   if (funcs_.find(key) == funcs_.end()) {
     return nullptr;
